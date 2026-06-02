@@ -15,12 +15,12 @@
 
     <style>
         :root {
-            --primary:   #1a3c6e;
+            --primary:       #1a3c6e;
             --primary-light: #2756a8;
-            --accent:    #f4a623;
-            --sidebar-w: 260px;
-            --sidebar-bg:#0f2447;
-            --body-bg:   #f0f4f8;
+            --accent:        #f4a623;
+            --sidebar-w:     260px;
+            --sidebar-bg:    #0f2447;
+            --body-bg:       #f0f4f8;
         }
 
         * { font-family: 'Inter', sans-serif; }
@@ -103,11 +103,14 @@
         }
         .nav-link-item.active i { color: var(--accent); }
 
-        /* Main content */
+        /* ── FIX: Main content must not bleed height into chart resize loop ── */
         #main-content {
             margin-left: var(--sidebar-w);
             min-height: 100vh;
             transition: margin .25s ease;
+            /* Prevents Chart.js ResizeObserver from reading a growing parent height */
+            display: flex;
+            flex-direction: column;
         }
 
         /* Topbar */
@@ -117,6 +120,7 @@
             padding: .8rem 1.5rem;
             display: flex; align-items: center; justify-content: space-between;
             position: sticky; top: 0; z-index: 1030;
+            flex-shrink: 0; /* ← FIX: topbar must never shrink/grow */
         }
         .topbar .page-heading { font-size: 1.1rem; font-weight: 700; color: var(--primary); }
         .topbar .breadcrumb { font-size: .75rem; margin: 0; }
@@ -140,8 +144,13 @@
         .stat-card .stat-value { font-size: 1.9rem; font-weight: 700; color: var(--primary); }
         .stat-card .stat-label { color: #64748b; font-size: .82rem; }
 
-        /* Content area */
-        .content-area { padding: 1.5rem; }
+        /* ── FIX: content-area must have stable block layout, not flex ── */
+        .content-area {
+            padding: 1.5rem;
+            flex: 1;          /* fills remaining height inside #main-content */
+            min-height: 0;    /* ← FIX: prevents flex child from forcing parent taller */
+            overflow-y: auto; /* ← FIX: scroll happens here, not on the body */
+        }
 
         /* Table styling */
         .table-card {
